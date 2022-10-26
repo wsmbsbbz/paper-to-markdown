@@ -7,7 +7,7 @@ package main
 // 两个实用的正则表达式
 // 1. (?<=\w)\[\[(\w*)\]\]  --->  $1
 // a ex[[ample]] here  --->  example
-// 2. \[\[(\w*)\]\](?=\w)  --->  $1
+// 2. \[\[(\w*)\]\](?=\w{3,})  --->  $1
 // a [[exam]]ple here  --->  example
 
 import (
