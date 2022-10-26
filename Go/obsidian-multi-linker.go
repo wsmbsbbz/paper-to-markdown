@@ -4,11 +4,16 @@ package main
 // 在字典树中查找其后的字符串，查找到即可记录起始和结尾下标，并添加
 // "[["和"]]"
 
-// 两个实用的正则表达式
-// 1. (?<=\w)\[\[(\w*)\]\]  --->  $1
-// a ex[[ample]] here  --->  example
-// 2. \[\[(\w*)\]\](?=\w{3,})  --->  $1
-// a [[exam]]ple here  --->  example
+// 几个实用的正则表达式
+// 1. 去除前缀
+// (?<=\w)\[\[(\w*)\]\]    ---> $1
+// a ex[[ample]] here      ---> a example here
+// 2. 去除后缀长度>=3的
+// \[\[(\w*)\]\](?=\w{3,}) ---> $1
+// a [[exam]]ple here      ---> a example here
+// 3. 去除所有标记
+// \[\[\(\w*)]\]           ---> $1
+// [[a example]] here      ---> a example here
 
 import (
 	"bufio"
