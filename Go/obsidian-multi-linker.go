@@ -30,8 +30,9 @@ type strIdx struct {
 }
 
 var dicTrie *Trie
-func init()  {
-    dicTrie = &Trie{}
+
+func init() {
+	dicTrie = &Trie{}
 }
 
 func main() {
@@ -56,29 +57,29 @@ func main() {
 	parseDirs(dicTrie, dirEntrys)
 
 	fReader := bufio.NewReader(file)
-    for brk := false; !brk; {
-        s, err := fReader.ReadString('\n')
-        if err == io.EOF {
-            brk = true
-        }
-        idxs := findWordFromTrie(dicTrie, s)
-        if len(idxs) == 0 {
-            output.WriteString(s)
-            continue
-        }
-        p := 0
-        for _, idx := range idxs {
-            if p > idx[0] {
-                log.Fatalf("p > idx[0]: %v, %v, %v", s, p, idx)
-            }
-            output.WriteString(s[p:idx[0]])
-            output.WriteString("[[")
-            output.WriteString(s[idx[0]:idx[1]])
-            output.WriteString("]]")
-            p = idx[1]
-        }
-        output.WriteString(s[p:])
-    }
+	for brk := false; !brk; {
+		s, err := fReader.ReadString('\n')
+		if err == io.EOF {
+			brk = true
+		}
+		idxs := findWordFromTrie(dicTrie, s)
+		if len(idxs) == 0 {
+			output.WriteString(s)
+			continue
+		}
+		p := 0
+		for _, idx := range idxs {
+			if p > idx[0] {
+				log.Fatalf("p > idx[0]: %v, %v, %v", s, p, idx)
+			}
+			output.WriteString(s[p:idx[0]])
+			output.WriteString("[[")
+			output.WriteString(s[idx[0]:idx[1]])
+			output.WriteString("]]")
+			p = idx[1]
+		}
+		output.WriteString(s[p:])
+	}
 }
 
 func parseDirs(t *Trie, dirEntrys []os.DirEntry) {
@@ -86,93 +87,93 @@ func parseDirs(t *Trie, dirEntrys []os.DirEntry) {
 		fullname := strings.ToLower(de.Name())
 		extension := filepath.Ext(fullname)
 		name := strings.TrimSuffix(fullname, extension)
-        // log.Printf("filename: %v\n", name)
+		// log.Printf("filename: %v\n", name)
 		t.Insert(name)
 	}
 }
 
 func findWordFromTrie(t *Trie, s string) [][2]int {
-    idx := [][2]int{}
-    var i int
-    for i = 0; i < len(s); {
-        t, n := t.Prefix(s[i:])
-        if t.isEnd {
-            idx = append(idx, [2]int{i, i + n})
-            i += n
-        } else {
-            i++
-        }
-    }
-    return idx
+	idx := [][2]int{}
+	var i int
+	for i = 0; i < len(s); {
+		t, n := t.Prefix(s[i:])
+		if t.isEnd {
+			idx = append(idx, [2]int{i, i + n})
+			i += n
+		} else {
+			i++
+		}
+	}
+	return idx
 }
 
 type Trie struct {
-    chars [30]*Trie
-    str string
-    isEnd bool
+	chars [30]*Trie
+	str   string
+	isEnd bool
 }
 
 func (t *Trie) Prefix(s string) (*Trie, int) {
-    n := 0
-    rt := t
-    rs := strings.ToLower(s)
+	n := 0
+	rt := t
+	rs := strings.ToLower(s)
 
-    for true {
-        if rt == nil {
-            log.Fatalf("rt-fatal: t, rt : %v, %v", t, rt)
-        }
-        // log.Printf("n: %v\n", n)
-        if len(rs) == 0 {
-            break
-        }
-        idx := getIdx(rs[0])
-        if idx < 0 || rt.chars[idx] == nil {
-            break
-        }
-        rs = rs[1:]
-        rt = rt.chars[idx]
-        n++
-    }
-    
-    return rt, n
+	for true {
+		if rt == nil {
+			log.Fatalf("rt-fatal: t, rt : %v, %v", t, rt)
+		}
+		// log.Printf("n: %v\n", n)
+		if len(rs) == 0 {
+			break
+		}
+		idx := getIdx(rs[0])
+		if idx < 0 || rt.chars[idx] == nil {
+			break
+		}
+		rs = rs[1:]
+		rt = rt.chars[idx]
+		n++
+	}
+
+	return rt, n
 }
 
 func (t *Trie) Search(s string) bool {
-    end, n := t.Prefix(s)
-    if n != len(s) {
-        // log.Printf("search: n, len(s) : %v, %v", n, len(s))
-        return false
-    }
-    return end.isEnd
+	end, n := t.Prefix(s)
+	if n != len(s) {
+		// log.Printf("search: n, len(s) : %v, %v", n, len(s))
+		return false
+	}
+	return end.isEnd
 }
 
 func (t *Trie) Insert(s string) {
-    if len(s) == 0 {
-        t.isEnd = true
-        // log.Println(t.isEnd, t.str)
-        return
-    }
-    idx := getIdx(s[0])
-    if idx < 0 {
-        return
-    }
-    if t.chars[idx] == nil {
-        t.chars[idx] = &Trie{}
-        t.chars[idx].str = t.str + string(s[0])
-    }
-    t.chars[idx].Insert(s[1:])
+	if len(s) == 0 {
+		t.isEnd = true
+		// log.Println(t.isEnd, t.str)
+		return
+	}
+	idx := getIdx(s[0])
+	if idx < 0 {
+		return
+	}
+	if t.chars[idx] == nil {
+		t.chars[idx] = &Trie{}
+		t.chars[idx].str = t.str + string(s[0])
+	}
+	t.chars[idx].Insert(s[1:])
 }
 
 func getIdx(c byte) int {
-    if 'a' <= c && c <= 'z' {
-        return int(c - 'a')
-    } else if c == '-' {
-        return 26
-    } else if c == '\'' {
-        return 27
-    } else if c == ' ' {
-        return 28
-    } else {
-        return -1
-    }
+	if 'a' <= c && c <= 'z' {
+		return int(c - 'a')
+	} else if c == '-' {
+		return 26
+	} else if c == '\'' {
+		return 27
+	} else if c == ' ' {
+		return 28
+	} else {
+		return -1
+	}
 }
